@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Bridgepoint Blazing Paddles Seating Plan</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+    h1 {
+      font-family: 'Poppins', Arial, sans-serif;
+    }
+    #seating-layout {
+      text-align: center;
+    }
+    .form-row {
+      margin-bottom: 10px;
+    }
+    .form-row label {
+      display: block;
+      margin-bottom: 4px;
+      font-weight: bold;
+    }
+    .form-row select, .form-row input[type="date"] {
+      width: 400px;
+      font-size: 14px;
+      text-align: center;
+      text-align-last: center;
+    }
+    .seat-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 8px 0;
+    }
+    .paddler {
+      display: flex;
+      align-items: center;
+      margin: 0 20px;
+    }
+    .paddler select {
+      margin: 0 10px;
+      width: 180px;
+      font-size: 14px;
+      text-align: center;
+      text-align-last: center;
+    }
+    .paddler img {
+      width: 60px;
+      height: 60px;
+      border: 1px solid #ccc;
+      object-fit: cover;
+    }
+    .paddler.vertical {
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    button {
+      margin-top: 20px;
+      padding: 6px 12px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<div id="seating-layout">
+  <h1>BRIDGEPOINT BLAZING PADDLES</h1>
+  <h2 style="margin-top: -10px; font-weight: normal; font-size: 20px; color: #555;">SEATING PLAN</h2>
+  <div id="event-logo" style="margin: -15px 0 10px 0; min-height: 150px; display: flex; justify-content: center; align-items: center;">
+    <img id="venueImage" src="SunnysidePaddlingClub.png" alt="Venue Logo" style="max-height: 112px; max-width: 75%; display: block;">
+  </div>
+
+  <div class="form-row">
+    <label for="eventDate">DATE</label>
+    <input type="date" id="eventDate">
+  </div>
+
+  <div class="form-row">
+    <label for="venue">VENUE</label>
+    <select id="venue">
+      <option value="Sunnyside Paddling Club" selected>Sunnyside Paddling Club</option>
+      <option value="Toronto International Dragon Boat Race Festival">Toronto International Dragon Boat Race Festival</option>
+      <option value="GWN Dragon Boat Challenge">GWN Dragon Boat Challenge</option>
+    </select>
+  </div>
+
+  <div class="form-row">
+    <label for="raceLength">DETAILS</label>
+    <select id="raceLength">
+      <option value="Practice Session" selected>Practice Session</option>
+    </select>
+  </div>
+
+  <h3>DRUMMER</h3>
+  <div class="seat-row" style="justify-content: center;">
+    <div class="paddler vertical">
+      <select id="drummer-select" onchange="updateImage(this, 'drummer-img')"></select>
+      <img src="BPLogo.jpg" alt="" id="drummer-img">
+    </div>
+  </div>
+
+  <h3>PADDLERS</h3>
+  <div id="paddler-rows"></div>
+
+  <h3>STEERSPERSON</h3>
+  <div class="seat-row" style="justify-content: center;">
+    <div class="paddler vertical">
+      <select id="steersperson-select" onchange="updateImage(this, 'steersperson-img')"></select>
+      <img src="BPLogo.jpg" alt="" id="steersperson-img">
+    </div>
+  </div>
+</div>
+
+<button onclick="downloadLayout()">Download Seating Plan as Image</button>
+
+<script>
+  const allNames = [..."Aileen,Akemi,Akriti,Alfred,Angelica,Branwen,Bridget,Celeste,Denise,Dwip,Glenn,Jeremy,Jessica N.,Jessica R.,John,Kamal,Louis,Lucy,Lourdes,Michael,Nazia,Nishita,Olivia,Omar,RJ,Roshan,Ryan,Ruth,Shannon,Shurraj,Sophia,Taelor,Teresa,Tiffany R.,Tiffany Y.,Vanesa A.,Vanessa P.,Vera,Vicky,Von,Wai".split(",")];
+  const jpegNames = ["Angelica","Celeste","Glenn","Lucy","Michael","RJ","Roshan","Ruth","Ryan","Shannon","Vanessa P.","Vera","Von","Wai"];
+
+  function getExtension(name) {
+    return jpegNames.includes(name) ? ".jpeg" : ".jpg";
+  }
+
+  function createDropdownOptions(includeEmptyLabel) {
+    const emptyOption = includeEmptyLabel ? '<option value="">None Selected</option>' : '<option value="">Empty Seat</option>';
+    return emptyOption + allNames.sort().map(name => {
+      const filename = name.replace(/\s|\./g, '') + getExtension(name);
+      return `<option value="${filename}" data-name="${name}">${name}</option>`;
+    }).join('');
+  }
+
+  function updateImage(select, imgId) {
+    const img = document.getElementById(imgId);
+    const filename = select.value;
+    img.src = filename || "BPLogo.jpg";
+  }
+
+  function createSeatRows(rows) {
+    let content = '';
+    for (let i = 0; i < rows; i++) {
+      content += `
+        <div class="seat-row">
+          <div class="paddler">
+            <select onchange="updateImage(this, 'left-img-${i}')">
+              ${createDropdownOptions(false)}
+            </select>
+            <img id="left-img-${i}" src="BPLogo.jpg" alt="">
+          </div>
+          <div style="font-weight: bold; font-size: 16px; margin: auto 10px; width: 20px; text-align: center; line-height: 60px; height: 60px;">${i + 1}</div>
+          <div class="paddler">
+            <img id="right-img-${i}" src="BPLogo.jpg" alt="">
+            <select onchange="updateImage(this, 'right-img-${i}')">
+              ${createDropdownOptions(false)}
+            </select>
+          </div>
+        </div>`;
+    }
+    return content;
+  }
+
+  function initDropdowns() {
+    document.getElementById("paddler-rows").innerHTML = createSeatRows(10);
+    document.getElementById("drummer-select").innerHTML = createDropdownOptions(true);
+    document.getElementById("steersperson-select").innerHTML = createDropdownOptions(true);
+  }
+
+  function setDefaultDate() {
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    document.getElementById("eventDate").value = `${yyyy}-${mm}-${dd}`;
+  }
+
+  initDropdowns();
+  setDefaultDate();
+
+  document.getElementById('venue').addEventListener('change', () => {
+    const value = document.getElementById('venue').value;
+    const venueImage = document.getElementById('venueImage');
+    const raceLengthSelect = document.getElementById('raceLength');
+    if (value === 'Toronto International Dragon Boat Race Festival') {
+      venueImage.src = 'TIDBRF.jpg';
+      raceLengthSelect.innerHTML = `
+        <option value="200 Metre Race">200 Metre Race</option>
+        <option value="500 Metre Race">500 Metre Race</option>`;
+    } else if (value === 'GWN Dragon Boat Challenge') {
+      venueImage.src = 'GWNChallenge.jpg';
+      raceLengthSelect.innerHTML = `
+        <option value="200 Metre Race">200 Metre Race</option>
+        <option value="500 Metre Race">500 Metre Race</option>`;
+    } else {
+      venueImage.src = 'SunnysidePaddlingClub.png';
+      raceLengthSelect.innerHTML = `<option value="Practice Session">Practice Session</option>`;
+    }
+  });
+
+  function downloadLayout() {
+    html2canvas(document.getElementById("seating-layout")).then(canvas => {
+      const link = document.createElement("a");
+      link.download = "seating-plan.png";
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    });
+  }
+</script>
+
+</body>
+</html>
